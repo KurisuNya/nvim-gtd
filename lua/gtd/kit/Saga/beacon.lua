@@ -9,7 +9,7 @@ local function jump_beacon(bufpos, width)
 
 	local float_opt = {
 		relative = "win",
-		bufpos = bufpos,
+		bufpos = { bufpos[1] - 1, 0 },
 		height = 1,
 		width = width,
 		row = 0,

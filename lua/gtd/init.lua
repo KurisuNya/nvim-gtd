@@ -7,6 +7,20 @@ local RegExp = require("gtd.kit.Vim.RegExp")
 local Position = require("gtd.kit.LSP.Position")
 local beacon = require("gtd.kit.Saga.beacon").jump_beacon
 
+local function get_true_width(line_string)
+	local tabwidth = vim.api.nvim_buf_get_option(0, "tabstop")
+	local tabcount = 0
+	local index = 0
+	while true do
+		index = string.find(line_string, "\t", index + 1)
+		if index == nil then
+			break
+		end
+		tabcount = tabcount + 1
+	end
+	return #line_string + tabcount * (tabwidth - 1)
+end
+
 local POS_PATTERN = RegExp.get([=[[^[:digit:]]\d\+\%([^[:digit:]]\d\+\)\?]=])
 
 ---@class gtd.kit.App.Config.Schema
@@ -198,9 +212,8 @@ function gtd.open(params, location)
 	end
 	if row ~= 1 or col ~= 1 then
 		vim.api.nvim_win_set_cursor(0, { row, col - 1 })
-		local width = #vim.api.nvim_get_current_line()
-		beacon({ row - 1, 0 }, width)
 	end
+	beacon(vim.api.nvim_win_get_cursor(0), get_true_width(vim.api.nvim_get_current_line()))
 end
 
 ---Normalize textDocument/definition response.
