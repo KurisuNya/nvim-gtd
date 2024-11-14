@@ -77,7 +77,9 @@ end
 ---Create setup interface.
 ---@return fun(config: gtd.kit.App.Config.Schema)|{ filetype: fun(filetypes: string|string[], config: gtd.kit.App.Config.Schema), buffer: fun(bufnr: integer, config: gtd.kit.App.Config.Schema) }
 function Config:create_setup_interface()
-	vim.api.nvim_set_hl(0, "GtdBeacon", { bg = "#c43963" })
+	if vim.fn.hlexists("GtdBeacon") == 0 then
+		vim.api.nvim_set_hl(0, "GtdBeacon", { link = "Cursor" })
+	end
 	return setmetatable({
 		---@param filetypes string|string[]
 		---@param config gtd.kit.App.Config.Schema

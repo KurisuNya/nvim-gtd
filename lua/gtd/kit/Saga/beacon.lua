@@ -33,12 +33,12 @@ local function jump_beacon(bufpos, width)
 	local timer = uv.new_timer()
 	timer:start(
 		0,
-		60,
+		30,
 		vim.schedule_wrap(function()
 			if not api.nvim_win_is_valid(winid) then
 				return
 			end
-			local blend = vim.wo[winid].winblend + 7
+			local blend = vim.wo[winid].winblend + 5
 			if blend > 100 then
 				blend = 100
 			end
