@@ -105,7 +105,20 @@ gtd.config = Config.new({
 	end,
 })
 
-gtd.setup = gtd.config:create_setup_interface()
+gtd.setup_highlights = function()
+	local function setup_highlights()
+		vim.api.nvim_set_hl(0, "GtdBeacon", { link = "Cursor" })
+	end
+	if vim.fn.hlexists("GtdBeacon") == 0 then
+		setup_highlights()
+	elseif vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = "GtdBeacon" })) then
+		setup_highlights()
+	end
+end
+gtd.setup = function(config)
+	gtd.config:create_setup_interface()(config)
+	gtd.setup_highlights()
+end
 
 ---@type table<string, gtd.Source>
 gtd.registry = {}
