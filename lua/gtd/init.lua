@@ -6,6 +6,21 @@ local Async = require('gtd.kit.Async')
 local RegExp = require('gtd.kit.Vim.RegExp')
 local Position = require('gtd.kit.LSP.Position')
 
+local beacon = require("gtd.kit.Beacon.beacon").jump_beacon
+local function get_true_width(line_string)
+	local tabwidth = vim.api.nvim_get_option_value("tabstop", {})
+	local tabcount = 0
+	local index = 0
+	while true do
+		index = string.find(line_string, "\t", index + 1)
+		if index == nil then
+			break
+		end
+		tabcount = tabcount + 1
+	end
+	return #line_string + tabcount * (tabwidth - 1)
+end
+
 local POS_PATTERN = RegExp.get([=[[^[:digit:]]\d\+\%([^[:digit:]]\d\+\)\?]=])
 
 ---@class gtd.kit.App.Config.Schema
@@ -92,7 +107,21 @@ gtd.config = Config.new({
   end
 })
 
-gtd.setup = gtd.config:create_setup_interface()
+gtd.setup_highlights = function()
+	local function setup_highlights()
+		vim.api.nvim_set_hl(0, "GtdBeacon", { link = "Cursor" })
+	end
+	if vim.fn.hlexists("GtdBeacon") == 0 then
+		setup_highlights()
+	elseif vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = "GtdBeacon" })) then
+		setup_highlights()
+	end
+end
+gtd.legacy_setup = gtd.config:create_setup_interface()
+gtd.setup = function(config)
+	gtd.legacy_setup(config)
+	gtd.setup_highlights()
+end
 
 ---@type table<string, gtd.Source>
 gtd.registry = {}
@@ -201,6 +230,7 @@ function gtd.open(params, location)
   if row ~= 1 or col ~= 1 then
     vim.api.nvim_win_set_cursor(0, { row, col - 1 })
   end
+	beacon(vim.api.nvim_win_get_cursor(0), get_true_width(vim.api.nvim_get_current_line()))
 end
 
 ---Normalize textDocument/definition response.
